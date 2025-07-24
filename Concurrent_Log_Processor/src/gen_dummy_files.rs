@@ -1,10 +1,9 @@
-use std::io::Write;
+use std::io::{BufWriter, Write};
 use std::fs::File;
-use enum_derived::Rand;
-use rand::{Rng};
-use random_string;
+use rand::prelude::*;
+use rayon::prelude::*;
 
-#[derive(Rand, Debug)]
+#[derive(Debug)]
 pub enum LogLevel {
     Error,
     Warning,
@@ -29,8 +28,6 @@ impl std::fmt::Display for Timestamp {
     //
     // * `f` - A mutable reference to a formatter.
     //
-    // # Returns
-    //
     // Returns `std::fmt::Result` which indicates whether the operation
     // succeeded or failed.
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -47,21 +44,31 @@ pub struct Line {
 
 impl Line {
     // Generates a random log level.
-    fn gen_log_level() -> LogLevel {
-        LogLevel::rand()
+    fn gen_log_level(rng: &mut ThreadRng) -> LogLevel {
+        match rng.random_range(0..4) {
+            0 => LogLevel::Error,
+            1 => LogLevel::Warning,
+            2 => LogLevel::Info,
+            _ => LogLevel::Debug,
+        }
     }
 
     // Generates a random log message.
-    fn gen_message() -> String {
-        random_string::generate_rng(10..20, random_string::charsets::ALPHA)
+    fn gen_message(rng: &mut ThreadRng) -> String {
+        let mut ascii: Vec<u8> = Vec::with_capacity(15);
+        unsafe {
+            ascii.set_len(15);
+        }
+        rng.fill_bytes(&mut ascii);
+        String::from_utf8_lossy(&ascii).to_string()
     }
 
     // Generates a random timestamp.
     //
-    // The timestamp is in the format of 24 hour clock. The hour is a random
+    // The timestamp is in the format of 24-hour clock. The hour is a random
     // number between 0 and 23, the minute is a random number between 0 and 59,
     // and the second is a random number between 0 and 59.
-    fn gen_timestamp(rng: &mut rand::rngs::ThreadRng) -> Timestamp {
+    fn gen_timestamp(rng: &mut ThreadRng) -> Timestamp {
         Timestamp {
             hour: rng.random_range(0..24),
             minute: rng.random_range(0..=59),
@@ -74,11 +81,11 @@ impl Line {
     // # Examples
     //23:32:56 Warning ZOcRmBreRrSzUdbC
     //19:54:58 Debug TGhImvBKfStO
-    pub fn gen_line(rng: &mut rand::rngs::ThreadRng) -> Line {
+    pub fn gen_line(rng: &mut ThreadRng) -> Line {
         Line {
             timestamp: Line::gen_timestamp(rng),
-            log_level: Line::gen_log_level(),
-            message: Line::gen_message()
+            log_level: Line::gen_log_level(rng),
+            message: Line::gen_message(rng)
         }
     }
 }
@@ -93,8 +100,6 @@ impl std::fmt::Display for Line {
     //
     // * `f` - A mutable reference to a formatter.
     //
-    // # Returns
-    //
     // Returns `std::fmt::Result` which indicates whether the operation
     // succeeded or failed.
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -102,13 +107,34 @@ impl std::fmt::Display for Line {
     }
 }
 
+// Generates 1,000,000 random log lines and writes them to a file named
+// "example.log".
+//
+// The generation is done in parallel, and the writing is done in a buffered
+// manner. The entire operation is wrapped in a `Result` so that any errors
+// that might occur are propagated up the call stack.
 pub fn generate() -> std::io::Result<()> {
-    let mut rng = rand::rng();
-    File::create("example.log")?;
-    let mut f = File::options().append(true).open("example.log")?;
-    for _ in 0..1000000 {
-        let line = Line::gen_line(& mut rng);
-        writeln!(&mut f, "{}", line)?;
+    // 1. Parallel Line Generation
+    // Use Rayon's parallel iterator to generate all lines in parallel.
+    // Each thread gets its own random number generator.
+    let lines: Vec<String> = (0..1000000)
+        .into_par_iter()
+        .map(|_| {
+            let mut rng = rand::rng();
+            Line::gen_line(&mut rng).to_string()
+        })
+        .collect();
+
+    // 2. Efficient File Writing
+    // Create the file and wrap it in a BufWriter for buffered I/O.
+    let file = File::create("example.log")?;
+    let mut writer = BufWriter::new(file);
+
+    // Write all the generated lines to the buffered writer.
+    for line in lines {
+        writeln!(&mut writer, "{}", line)?;
     }
+
+    // The buffer is automatically flushed when `writer` goes out of scope.
     Ok(())
 }
