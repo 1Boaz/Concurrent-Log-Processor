@@ -55,11 +55,10 @@ impl Line {
 
     // Generates a random log message.
     fn gen_message(rng: &mut ThreadRng) -> String {
-        let mut ascii: Vec<u8> = Vec::with_capacity(15);
-        unsafe {
-            ascii.set_len(15);
-        }
-        rng.fill_bytes(&mut ascii);
+        // Generate the vector of random ASCII characters
+        let ascii: Vec<u8> = (0..15)
+            .map(|_| rng.random_range(32..=126))
+            .collect();
         String::from_utf8_lossy(&ascii).to_string()
     }
 
