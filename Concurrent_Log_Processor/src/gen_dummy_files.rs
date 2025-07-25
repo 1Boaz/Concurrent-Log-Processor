@@ -4,7 +4,7 @@ use rand::prelude::*;
 use rayon::prelude::*;
 
 #[derive(Debug)]
-pub enum LogLevel {
+enum LogLevel {
     Error,
     Warning,
     Info,
@@ -12,10 +12,10 @@ pub enum LogLevel {
 }
 
 #[derive(Debug)]
-pub struct Timestamp {
-    pub hour: u8,
-    pub minute: u8,
-    pub second: u8
+struct Timestamp {
+    hour: u8,
+    minute: u8,
+    second: u8
 }
 
 impl std::fmt::Display for Timestamp {
@@ -36,10 +36,10 @@ impl std::fmt::Display for Timestamp {
 }
 
 #[derive(Debug)]
-pub struct Line {
-    pub timestamp: Timestamp,
-    pub log_level: LogLevel,
-    pub message: String
+struct Line {
+    timestamp: Timestamp,
+    log_level: LogLevel,
+    message: String
 }
 
 impl Line {
@@ -80,7 +80,7 @@ impl Line {
     // # Examples
     //23:32:56 Warning ZOcRmBreRrSzUdbC
     //19:54:58 Debug TGhImvBKfStO
-    pub fn gen_line(rng: &mut ThreadRng) -> Line {
+    fn gen_line(rng: &mut ThreadRng) -> Line {
         Line {
             timestamp: Line::gen_timestamp(rng),
             log_level: Line::gen_log_level(rng),
@@ -126,7 +126,7 @@ pub fn generate() -> std::io::Result<()> {
 
     // 2. Efficient File Writing
     // Create the file and wrap it in a BufWriter for buffered I/O.
-    let file = File::create("example.log")?;
+    let file = File::create("Dummy_file.log")?;
     let mut writer = BufWriter::new(file);
 
     // Write all the generated lines to the buffered writer.
