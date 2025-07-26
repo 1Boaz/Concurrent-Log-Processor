@@ -3,8 +3,12 @@ use std::io::ErrorKind;
 mod gen_dummy_files;
 
 fn main() {
+
+}
+
+fn gen_dummy_file() {
     match gen_dummy_files::generate() {
-        Ok(()) => println!("Successfully generated dummy files"),
+        Ok(()) => println!("Successfully generated dummy file"),
         Err(error) => match error.kind() {
             ErrorKind::PermissionDenied => println!("Failed to generate dummy file, lacks permission to create or write to file: {}", error),
             ErrorKind::NotFound => println!("Path to file not found: {}", error),
