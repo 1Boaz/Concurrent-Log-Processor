@@ -13,6 +13,9 @@ enum LogLevel {
 
 #[derive(Debug)]
 struct Timestamp {
+    year: u16,
+    month: u8,
+    day: u8,
     hour: u8,
     minute: u8,
     second: u8
@@ -31,7 +34,7 @@ impl std::fmt::Display for Timestamp {
     // Returns `std::fmt::Result` which indicates whether the operation
     // succeeded or failed.
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}:{}:{}", self.hour, self.minute ,self.second)
+        write!(f, "{}-{}-{}T{}:{}:{}",self.year,self.month,self.day, self.hour, self.minute ,self.second)
     }
 }
 
@@ -69,6 +72,9 @@ impl Line {
     // and the second is a random number between 0 and 59.
     fn gen_timestamp(rng: &mut ThreadRng) -> Timestamp {
         Timestamp {
+            year: rng.random_range(2000..3000),
+            month: rng.random_range(1..13),
+            day: rng.random_range(1..32),
             hour: rng.random_range(0..24),
             minute: rng.random_range(0..=59),
             second: rng.random_range(0..=59),
