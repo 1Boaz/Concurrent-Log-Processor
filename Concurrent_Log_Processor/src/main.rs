@@ -1,6 +1,7 @@
 use std::io::ErrorKind;
 
 mod gen_dummy_files;
+mod processing;
 
 fn main() {
 
