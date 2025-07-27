@@ -1,10 +1,18 @@
+use clap::Parser;
 use std::io::ErrorKind;
+use crate::args::EntityType;
 
 mod gen_dummy_files;
 mod processing;
+mod args;
 
 fn main() {
+    let args = args::Concurrent_Log_Processor::parse();
 
+    match args.entity_type {
+        EntityType::Generate(_) => println!("Generating file"),
+        EntityType::Process(_) => println!("Processing file"),
+    }
 }
 
 fn gen_dummy_file() {
