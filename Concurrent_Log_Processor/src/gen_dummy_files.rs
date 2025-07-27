@@ -118,11 +118,15 @@ impl std::fmt::Display for Line {
 // The generation is done in parallel, and the writing is done in a buffered
 // manner. The entire operation is wrapped in a `Result` so that any errors
 // that might occur are propagated up the call stack.
-pub fn generate() -> std::io::Result<()> {
+pub fn generate(filename: Option<String>, lines: Option<u32>) -> std::io::Result<()> {
+    // 1. Validating file name and lines Some and not None
+    let filename = filename.unwrap_or("Dummy_file.log".to_string());
+    let lines = lines.unwrap_or(10000);
+
     // 1. Parallel Line Generation
     // Use Rayon's parallel iterator to generate all lines in parallel.
     // Each thread gets its own random number generator.
-    let lines: Vec<String> = (0..1000000)
+    let lines: Vec<String> = (0..lines)
         .into_par_iter()
         .map(|_| {
             let mut rng = rand::rng();
@@ -132,7 +136,7 @@ pub fn generate() -> std::io::Result<()> {
 
     // 2. Efficient File Writing
     // Create the file and wrap it in a BufWriter for buffered I/O.
-    let file = File::create("Dummy_file.log")?;
+    let file = File::create(filename)?;
     let mut writer = BufWriter::new(file);
 
     // Write all the generated lines to the buffered writer.

@@ -1,5 +1,6 @@
 use clap::Parser;
 use std::io::ErrorKind;
+use std::path::PathBuf;
 use crate::args::EntityType;
 
 mod gen_dummy_files;
@@ -10,13 +11,13 @@ fn main() {
     let args = args::Concurrent_Log_Processor::parse();
 
     match args.entity_type {
-        EntityType::Generate(_) => println!("Generating file"),
+        EntityType::Generate(args) => gen_dummy_file(args.filename, args.lines),
         EntityType::Process(_) => println!("Processing file"),
     }
 }
 
-fn gen_dummy_file() {
-    match gen_dummy_files::generate() {
+fn gen_dummy_file(filename: Option<String>, lines: Option<u32>) {
+    match gen_dummy_files::generate(filename, lines) {
         Ok(()) => println!("Successfully generated dummy file"),
         Err(error) => match error.kind() {
             ErrorKind::PermissionDenied => println!("Failed to generate dummy file, lacks permission to create or write to file: {}", error),
