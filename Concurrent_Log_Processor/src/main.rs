@@ -1,6 +1,5 @@
 use clap::Parser;
 use std::io::ErrorKind;
-use std::path::PathBuf;
 use crate::args::EntityType;
 
 mod gen_dummy_files;
