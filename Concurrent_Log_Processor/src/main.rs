@@ -35,9 +35,21 @@ fn gen_dummy_file(filename: Option<String>, lines: Option<u32>) {
 
 fn process_file(args: ProcessCommand) {
     match processing::spreading_tasks::process(args.threads, args.file, args.log_level) {
-        Ok(()) => println!("Successfully processed file"),
-        Err(error) => match error.kind() {
-            _ => {}
+        Ok(()) => {
+            println!("Successfully processed file");
+        },
+        Err(error) => {
+            match error.kind() {
+                ErrorKind::PermissionDenied => println!("Failed to process file, lacks permission to create or write to file: {}", error),
+                ErrorKind::NotFound => println!("Path to file not found: {}", error),
+                ErrorKind::AlreadyExists=> println!("The File already exists and could not be appended to or overwritten: {}", error),
+                ErrorKind::TimedOut => println!("Timed out waiting for file creation: {}", error),
+                ErrorKind::Interrupted => println!("Interrupted by user input: {}", error),
+                ErrorKind::StorageFull => println!("The disk is full and can`t save the file: {}", error),
+                ErrorKind::InvalidInput | ErrorKind::InvalidData => println!("Invalid path to file: {}", error),
+                ErrorKind::WriteZero => println!("Failed to write to file: {}", error),
+                _ => println!("Failed to process file: {}", error),
+            }
         },
     }
 }
