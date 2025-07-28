@@ -18,10 +18,10 @@ pub struct GenerateCommand {
 
 #[derive(Args, Debug)]
 pub struct ProcessCommand {
-    /// Number of threads the program will use to process the file
-    pub threads: Option<usize>,
     /// The name of the file to process
-    pub file: Option<String>,
+    pub file: String,
+    /// Number of threads the program will use to process the file
+    pub threads: Option<u128>,
     /// Log level to filter by
     pub log_level: Option<String>,
 }

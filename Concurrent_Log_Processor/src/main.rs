@@ -1,6 +1,7 @@
 use clap::Parser;
 use std::io::ErrorKind;
 use args::EntityType;
+use crate::args::ProcessCommand;
 
 mod gen_dummy_files;
 mod processing;
@@ -11,7 +12,7 @@ fn main() {
 
     match args.entity_type {
         EntityType::Generate(args) => gen_dummy_file(args.filename, args.lines),
-        EntityType::Process(_) => println!("Processing file"),
+        EntityType::Process(args) => process_file(args),
     }
 }
 
@@ -29,5 +30,14 @@ fn gen_dummy_file(filename: Option<String>, lines: Option<u32>) {
             ErrorKind::WriteZero => println!("Failed to write to file: {}", error),
             _ => println!("Failed to generate dummy file: {}", error),
         }
+    }
+}
+
+fn process_file(args: ProcessCommand) {
+    match processing::spreading_tasks::process(args.threads, args.file, args.log_level) {
+        Ok(()) => println!("Successfully processed file"),
+        Err(error) => match error.kind() {
+            _ => {}
+        },
     }
 }
