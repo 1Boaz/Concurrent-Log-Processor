@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::io::ErrorKind;
-use crate::args::EntityType;
+use args::EntityType;
 
 mod gen_dummy_files;
 mod processing;
@@ -21,7 +21,7 @@ fn gen_dummy_file(filename: Option<String>, lines: Option<u32>) {
         Err(error) => match error.kind() {
             ErrorKind::PermissionDenied => println!("Failed to generate dummy file, lacks permission to create or write to file: {}", error),
             ErrorKind::NotFound => println!("Path to file not found: {}", error),
-            ErrorKind::AlreadyExists=> println!("The File already exists and could not be appended to or overeaten: {}", error),
+            ErrorKind::AlreadyExists=> println!("The File already exists and could not be appended to or overwritten: {}", error),
             ErrorKind::TimedOut => println!("Timed out waiting for file creation: {}", error),
             ErrorKind::Interrupted => println!("Interrupted by user input: {}", error),
             ErrorKind::StorageFull => println!("The disk is full and can`t save the file: {}", error),
