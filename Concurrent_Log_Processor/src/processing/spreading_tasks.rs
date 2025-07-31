@@ -4,8 +4,11 @@
 //! based on specified criteria. It currently processes logs sequentially but is structured
 //! to support concurrent processing in the future.
 
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use crate::enums_and_structs::LogLevel;
+
 
 /// Processes a log file, filters by specified log level, and provides statistics.
 ///
@@ -23,10 +26,8 @@ pub fn process(threads: Option<u128>, file: String, log_level: Option<String>) -
 
     // Initialize counters for different log levels
     let mut log_level_count = 0;      // Counts lines matching the specified log level
-    let mut error_log_level_count = 0;   // Counts all Error level logs
-    let mut info_log_level_count = 0;    // Counts all Info level logs
-    let mut debug_log_level_count = 0;   // Counts all Debug level logs
-    let mut warning_log_level_count = 0; // Counts all Warning level logs
+    let mut log_level_counts: HashMap<LogLevel, u128> = HashMap::new(); // Counts occurrences of each log level
+
 
     println!("Processing {} with {} threads filtered by {}", file, threads, loglevel);
 
@@ -46,25 +47,26 @@ pub fn process(threads: Option<u128>, file: String, log_level: Option<String>) -
 
         // Count occurrences of each log level
         if line.contains("Error") {
-            error_log_level_count += 1;
+            *log_level_counts.entry(LogLevel::Error).or_insert(0) += 1;
         } else if line.contains("Info") {
-            info_log_level_count += 1;
+            *log_level_counts.entry(LogLevel::Info).or_insert(0) += 1;
         } else if line.contains("Debug") {
-            debug_log_level_count += 1;
+            *log_level_counts.entry(LogLevel::Debug).or_insert(0) += 1;
         } else if line.contains("Warning") {
-            warning_log_level_count += 1;
+            *log_level_counts.entry(LogLevel::Warning).or_insert(0) += 1;
         }
     }
 
+
     // Print summary statistics
     println!("Found {} lines filtered by {}", log_level_count, loglevel);
-    println!("Found {} lines filtered by Error", error_log_level_count);
-    println!("Found {} lines filtered by Info", info_log_level_count);
-    println!("Found {} lines filtered by Debug", debug_log_level_count);
-    println!("Found {} lines filtered by Warning", warning_log_level_count);
+    println!("Found {} lines filtered by Error", log_level_counts.get(&LogLevel::Error).unwrap_or(&0));
+    println!("Found {} lines filtered by Info", log_level_counts.get(&LogLevel::Info).unwrap_or(&0));
+    println!("Found {} lines filtered by Debug", log_level_counts.get(&LogLevel::Debug).unwrap_or(&0));
+    println!("Found {} lines filtered by Warning", log_level_counts.get(&LogLevel::Warning).unwrap_or(&0));
 
     // Print total processed lines (sum of all log levels)
-    let total_lines = error_log_level_count + info_log_level_count + debug_log_level_count + warning_log_level_count;
+    let total_lines = log_level_counts.get(&LogLevel::Error).unwrap_or(&0) + log_level_counts.get(&LogLevel::Info).unwrap_or(&0) + log_level_counts.get(&LogLevel::Debug).unwrap_or(&0) + log_level_counts.get(&LogLevel::Warning).unwrap_or(&0);
     println!("Processed {} lines in total", total_lines);
 
     Ok(())

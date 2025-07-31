@@ -7,13 +7,13 @@
 //! 2. Process log files with configurable thread support and log level filtering
 
 use clap::Parser;
-use std::io::ErrorKind;
 use args::EntityType;
 use crate::args::ProcessCommand;
 
 mod gen_dummy_files;
 mod processing;
 mod args;
+mod enums_and_structs;
 
 /// Main entry point of the application.
 ///

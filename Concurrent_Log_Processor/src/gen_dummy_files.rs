@@ -2,48 +2,9 @@ use std::io::{BufWriter, Write};
 use std::fs::File;
 use rand::prelude::*;
 use rayon::prelude::*;
-
-#[derive(Debug)]
-enum LogLevel {
-    Error,
-    Warning,
-    Info,
-    Debug,
-}
-
-#[derive(Debug)]
-struct Timestamp {
-    year: u16,
-    month: u8,
-    day: u8,
-    hour: u8,
-    minute: u8,
-    second: u8
-}
-
-impl std::fmt::Display for Timestamp {
-    // Formats the `Timestamp` struct for display.
-    //
-    // This implementation of the `fmt` method formats a `Timestamp` by writing
-    // the hour, minute, and second to the provided formatter.
-    //
-    // # Arguments
-    //
-    // * `f` - A mutable reference to a formatter.
-    //
-    // Returns `std::fmt::Result` which indicates whether the operation
-    // succeeded or failed.
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}-{}-{}T{}:{}:{}",self.year,self.month,self.day, self.hour, self.minute ,self.second)
-    }
-}
-
-#[derive(Debug)]
-struct Line {
-    timestamp: Timestamp,
-    log_level: LogLevel,
-    message: String
-}
+use crate::enums_and_structs::Timestamp;
+use crate::enums_and_structs::LogLevel;
+use crate::enums_and_structs::Line;
 
 impl Line {
     // Generates a random log level.
