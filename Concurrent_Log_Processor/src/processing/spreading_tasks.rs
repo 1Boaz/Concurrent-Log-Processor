@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use crate::enums_and_structs::LogLevel;
-
+use crate::processing::process::process;
 
 /// Processes a log file, filters by specified log level, and provides statistics.
 ///
@@ -19,17 +19,17 @@ use crate::enums_and_structs::LogLevel;
 ///
 /// # Returns
 /// * `std::io::Result<()>` - Ok(()) on success, or an IO error if file operations fail
-pub fn process(threads: Option<u128>, file: String, log_level: Option<String>) -> std::io::Result<()> {
+pub fn spread_tasks(threads: Option<u128>, file: String, log_level: Option<String>) -> std::io::Result<()> {
     // Set default values if not provided
     let threads = threads.unwrap_or(20);
     let loglevel = log_level.unwrap_or("Error".to_string());
 
     // Initialize counters for different log levels
-    let mut log_level_count = 0;      // Counts lines matching the specified log level
+    let mut log_level_count: u32 = 0;      // Counts lines matching the specified log level
     let mut log_level_counts: HashMap<LogLevel, u128> = HashMap::new(); // Counts occurrences of each log level
 
 
-    println!("Processing {} with {} threads filtered by {}", file, threads, loglevel);
+    println!("Processing {} with {} threads filtered by {}", file, threads, &loglevel);
 
     // Open and read the log file line by line
     let file = File::open(file)?;
@@ -38,23 +38,7 @@ pub fn process(threads: Option<u128>, file: String, log_level: Option<String>) -
     // Process each line in the log file
     for line_result in reader.lines() {
         let line = line_result?;
-
-        // Check if the line contains the specified log level
-        if line.contains(&loglevel) {
-            log_level_count += 1;
-            println!("{}", line);  // Print lines matching the specified log level
-        }
-
-        // Count occurrences of each log level
-        if line.contains("Error") {
-            *log_level_counts.entry(LogLevel::Error).or_insert(0) += 1;
-        } else if line.contains("Info") {
-            *log_level_counts.entry(LogLevel::Info).or_insert(0) += 1;
-        } else if line.contains("Debug") {
-            *log_level_counts.entry(LogLevel::Debug).or_insert(0) += 1;
-        } else if line.contains("Warning") {
-            *log_level_counts.entry(LogLevel::Warning).or_insert(0) += 1;
-        }
+        process(line, &loglevel, &mut log_level_counts, &mut log_level_count);
     }
 
 

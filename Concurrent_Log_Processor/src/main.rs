@@ -57,7 +57,7 @@ fn gen_dummy_file(filename: Option<String>, lines: Option<u32>) {
 ///   - file: Path to the log file to process
 ///   - log_level: Log level to filter by
 fn process_file(args: ProcessCommand) {
-    match processing::spreading_tasks::process(args.threads, args.file, args.log_level) {
+    match processing::spreading_tasks::spread_tasks(args.threads, args.file, args.log_level) {
         Ok(()) => {
             println!("Successfully processed file");
         },
