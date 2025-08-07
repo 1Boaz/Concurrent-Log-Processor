@@ -29,40 +29,12 @@ pub fn spread_tasks(threads: Option<u128>, file: String, log_level: Option<Strin
 
     println!("Processing {} with {} threads filtered by {}", file, num_threads, &loglevel);
 
-    // Create a thread pool with the specified number of threads
-    let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(num_threads as usize)
-        .build()
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-
     // Read the entire file into memory first for better I/O performance
     let file_content = std::fs::read_to_string(&file)?;
     
     // Shared counters
     let log_level_counts = Arc::new(Mutex::new(HashMap::<LogLevel, u128>::new()));
     let log_level_count = Arc::new(atomic::AtomicUsize::new(0));
-    
-    // Process lines in parallel using the thread pool
-    pool.install(|| {
-        // Split the file content into lines and process in parallel
-        file_content.par_lines()
-            .fold(
-                || (HashMap::new(), 0),
-                |(mut local_counts, mut local_count), line| {
-                    process(line.to_string(), &loglevel, &mut local_counts, &mut local_count);
-                    (local_counts, local_count)
-                }
-            )
-            .reduce(
-                || (HashMap::new(), 0),
-                |(mut counts1, total1), (counts2, total2)| {
-                    for (k, v) in counts2 {
-                        *counts1.entry(k).or_insert(0) += v;
-                    }
-                    (counts1, total1 + total2)
-                }
-            )
-    });
     
     // Process the file in parallel and get the final counts and total
     let (final_counts, final_total) = file_content.par_lines()
